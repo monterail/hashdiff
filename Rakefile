@@ -1,13 +1,12 @@
-$:.push File.expand_path("../lib", __FILE__)
+$LOAD_PATH.push File.expand_path("../lib", __FILE__)
 
-require 'bundler'
+require "bundler"
 Bundler::GemHelper.install_tasks
 
-require 'rspec/core/rake_task'
+require "rspec/core/rake_task"
 
-task :default => :spec
+task default: :spec
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
   spec.pattern = "./spec/**/*_spec.rb"
 end
-

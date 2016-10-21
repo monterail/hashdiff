@@ -1,5 +1,4 @@
 module HashDiff
-
   # Best diff two objects, which tries to generate the smallest change set using different similarity values.
   #
   # HashDiff.best_diff is useful in case of comparing two objects which include similar hashes in arrays.
@@ -27,15 +26,15 @@ module HashDiff
   def self.best_diff(obj1, obj2, options = {}, &block)
     options[:comparison] = block if block_given?
 
-    opts = { :similarity => 0.3 }.merge!(options)
+    opts = { similarity: 0.3 }.merge!(options)
     diffs_1 = diff(obj1, obj2, opts)
     count_1 = count_diff diffs_1
 
-    opts = { :similarity => 0.5 }.merge!(options)
+    opts = { similarity: 0.5 }.merge!(options)
     diffs_2 = diff(obj1, obj2, opts)
     count_2 = count_diff diffs_2
 
-    opts = { :similarity => 0.8 }.merge!(options)
+    opts = { similarity: 0.8 }.merge!(options)
     diffs_3 = diff(obj1, obj2, opts)
     count_3 = count_diff diffs_3
 
@@ -69,12 +68,12 @@ module HashDiff
   # @since 0.0.1
   def self.diff(obj1, obj2, options = {}, &block)
     opts = {
-      :prefix      =>   '',
-      :similarity  =>   0.8,
-      :delimiter   =>   '.',
-      :strict      =>   true,
-      :strip       =>   false,
-      :numeric_tolerance => 0
+      prefix: '',
+      similarity: 0.8,
+      delimiter: '.',
+      strict: true,
+      strip: false,
+      numeric_tolerance: 0
     }.merge!(options)
 
     opts[:comparison] = block if block_given?
@@ -83,17 +82,11 @@ module HashDiff
     result = custom_compare(opts[:comparison], opts[:prefix], obj1, obj2)
     return result if result
 
-    if obj1.nil? and obj2.nil?
-      return []
-    end
+    return [] if obj1.nil? && obj2.nil?
 
-    if obj1.nil?
-      return [['~', opts[:prefix], nil, obj2]]
-    end
+    return [['+', opts[:prefix], nil, obj2]] if obj1.nil?
 
-    if obj2.nil?
-      return [['~', opts[:prefix], obj1, nil]]
-    end
+    return [['-', opts[:prefix], obj1, nil]] if obj2.nil?
 
     unless comparable?(obj1, obj2, opts[:strict])
       return [['~', opts[:prefix], obj1, obj2]]
@@ -104,7 +97,7 @@ module HashDiff
       changeset = diff_array(obj1, obj2, opts) do |lcs|
         # use a's index for similarity
         lcs.each do |pair|
-          result.concat(diff(obj1[pair[0]], obj2[pair[1]], opts.merge(:prefix => "#{opts[:prefix]}[#{pair[0]}]")))
+          result.concat(diff(obj1[pair[0]], obj2[pair[1]], opts.merge(prefix: "#{opts[:prefix]}[#{pair[0]}]")))
         end
       end
 
@@ -116,11 +109,11 @@ module HashDiff
         end
       end
     elsif obj1.is_a?(Hash)
-      if opts[:prefix].empty?
-        prefix = ""
-      else
-        prefix = "#{opts[:prefix]}#{opts[:delimiter]}"
-      end
+      prefix = if opts[:prefix].empty?
+                 ''
+               else
+                 "#{opts[:prefix]}#{opts[:delimiter]}"
+               end
 
       deleted_keys = obj1.keys - obj2.keys
       common_keys = obj1.keys & obj2.keys
@@ -138,18 +131,17 @@ module HashDiff
       end
 
       # recursive comparison for common keys
-      common_keys.sort.each {|k| result.concat(diff(obj1[k], obj2[k], opts.merge(:prefix => "#{prefix}#{k}"))) }
+      common_keys.sort.each { |k| result.concat(diff(obj1[k], obj2[k], opts.merge(prefix: "#{prefix}#{k}"))) }
 
       # added properties
       added_keys.sort.each do |k|
-        unless obj1.key?(k)
-          custom_result = custom_compare(opts[:comparison], "#{prefix}#{k}", nil, obj2[k])
+        next if obj1.key?(k)
+        custom_result = custom_compare(opts[:comparison], "#{prefix}#{k}", nil, obj2[k])
 
-          if custom_result
-            result.concat(custom_result)
-          else
-            result << ['+', "#{prefix}#{k}", obj2[k]]
-          end
+        if custom_result
+          result.concat(custom_result)
+        else
+          result << ['+', "#{prefix}#{k}", obj2[k]]
         end
       end
     else
@@ -165,20 +157,20 @@ module HashDiff
   # diff array using LCS algorithm
   def self.diff_array(a, b, options = {})
     opts = {
-      :prefix      =>   '',
-      :similarity  =>   0.8,
-      :delimiter   =>   '.'
+      prefix: '',
+      similarity: 0.8,
+      delimiter: '.'
     }.merge!(options)
 
     change_set = []
-    if a.size == 0 and b.size == 0
+    if a.empty? && b.empty?
       return []
-    elsif a.size == 0
+    elsif a.empty?
       b.each_index do |index|
         change_set << ['+', index, b[index]]
       end
       return change_set
-    elsif b.size == 0
+    elsif b.empty?
       a.each_index do |index|
         i = a.size - index - 1
         change_set << ['-', i, a[i]]
@@ -200,12 +192,12 @@ module HashDiff
       x, y = pair
 
       # remove from a, beginning from the end
-      (x > last_x + 1) and (x - last_x - 2).downto(0).each do |i|
+      (x > last_x + 1) && (x - last_x - 2).downto(0).each do |i|
         change_set << ['-', last_y + i + 1, a[i + last_x + 1]]
       end
 
       # add from b, beginning from the head
-      (y > last_y + 1) and 0.upto(y - last_y - 2).each do |i|
+      (y > last_y + 1) && 0.upto(y - last_y - 2).each do |i|
         change_set << ['+', last_y + i + 1, b[i + last_y + 1]]
       end
 
@@ -216,5 +208,4 @@ module HashDiff
 
     change_set
   end
-
 end

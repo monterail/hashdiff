@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe HashDiff do
   it "should be able to diff two equal array" do
@@ -14,7 +14,7 @@ describe HashDiff do
     b = [1, 8, 7]
 
     diff = HashDiff.diff_array(a, b)
-    diff.should == [['-', 2, 3], ['-', 1, 2], ['+', 1, 8], ['+', 2, 7]]
+    diff.should == [["-", 2, 3], ["-", 1, 2], ["+", 1, 8], ["+", 2, 7]]
   end
 
   it "should be able to diff two arrays with nothing in common" do
@@ -22,7 +22,7 @@ describe HashDiff do
     b = []
 
     diff = HashDiff.diff_array(a, b)
-    diff.should == [['-', 1, 2], ['-', 0, 1]]
+    diff.should == [["-", 1, 2], ["-", 0, 1]]
   end
 
   it "should be able to diff an empty array with an non-empty array" do
@@ -30,7 +30,7 @@ describe HashDiff do
     b = [1, 2]
 
     diff = HashDiff.diff_array(a, b)
-    diff.should == [['+', 0, 1], ['+', 1, 2]]
+    diff.should == [["+", 0, 1], ["+", 1, 2]]
   end
 
   it "should be able to diff two arrays with two elements in common" do
@@ -38,7 +38,7 @@ describe HashDiff do
     b = [2, 3, 7, 5]
 
     diff = HashDiff.diff_array(a, b)
-    diff.should == [['-', 0, 1], ['+', 0, 2], ['+', 2, 7], ['-', 4, 7]]
+    diff.should == [["-", 0, 1], ["+", 0, 2], ["+", 2, 7], ["-", 4, 7]]
   end
 
   it "should be able to test two arrays with two common elements in different order" do
@@ -46,15 +46,13 @@ describe HashDiff do
     b = [2, 3, 7, 5]
 
     diff = HashDiff.diff_array(a, b)
-    diff.should == [['-', 0, 1], ['+', 0, 2], ['-', 2, 4], ['+', 3, 5]]
+    diff.should == [["-", 0, 1], ["+", 0, 2], ["-", 2, 4], ["+", 3, 5]]
   end
 
   it "should be able to diff two arrays with similar elements" do
-    a = [{'a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5}, 3]
-    b = [1, {'a' => 1, 'b' => 2, 'c' => 3, 'e' => 5}]
+    a = [{ "a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5 }, 3]
+    b = [1, { "a" => 1, "b" => 2, "c" => 3, "e" => 5 }]
     diff = HashDiff.diff_array(a, b)
-    diff.should == [['+', 0, 1], ['-', 2, 3]]
+    diff.should == [["+", 0, 1], ["-", 2, 3]]
   end
-
 end
-
