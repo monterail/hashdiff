@@ -4,23 +4,6 @@ HashDiff is a ruby library to compute the smallest difference between two hashes
 
 **Docs**: [Documentation](http://rubydoc.info/gems/hashdiff)
 
-## Why HashDiff?
-
-Given two Hashes A and B, sometimes you face the question: what's the smallest modification that can be made to change A into B?
-
-An algorithm that responds to this question has to do following:
-
-* Generate a list of additions, deletions and changes, so that `A + ChangeSet = B` and `B - ChangeSet = A`.
-* Compute recursively -- Arrays and Hashes may be nested arbitrarily in A or B.
-* Compute the smallest change -- it should recognize similar child Hashes or child Arrays between A and B.
-
-HashDiff answers the question above using an opinionated approach:
-
-* Hash can be represented as a list of (dot-syntax-path, value) pairs. For example, `{a:[{c:2}]}` can be represented as `["a[0].c", 2]`.
-* The change set can be represented using the dot-syntax representation. For example, `[['-', 'b.x', 3], ['~', 'b.z', 45, 30], ['+', 'b.y', 3]]`.
-* It compares Arrays using the [LCS(longest common subsequence)](http://en.wikipedia.org/wiki/Longest_common_subsequence_problem) algorithm.
-* It recognizes similar Hashes in an Array using a similarity value (0 < similarity <= 1).
-
 ## Usage
 
 To use the gem, add the following to your Gemfile:
@@ -40,28 +23,57 @@ a = {a:3, b:2}
 b = {}
 
 diff = HashDiff.diff(a, b)
-diff.should == [['-', 'a', 3], ['-', 'b', 2]]
+diff.should == [
+ ['-', 'a', 3], 
+ ['-', 'b', 2]
+]
+
 ```
 
-More complex hashes:
+Hashes from real life of dev:
 
 ```ruby
-a = {a:{x:2, y:3, z:4}, b:{x:3, z:45}}
-b = {a:{y:3}, b:{y:3, z:30}}
+a = {
+ :id=>"16b8d68f-b173-42f8-b6c9-4b0b2893dc0d",
+ :code=>"WZX",
+ :contract_id=>"542354543",
+ :account=>"654364536543",
+ :name_id=>"7c32404c-0588-417e-9eac-416dce6a095f",
+ :supplier_id=>"31e63dce-0ec7-45d8-9da9-1fd952ca3aa6",
+ :season_id=>"f52235c1-3fdb-46a4-9038-31117db0e56f",
+ :name=>"Name",
+ :supplier=>"NEW",
+ :profile=>nil,
+ :services=>[],
+ :geolocations=>[]
+}
+
+b = {
+ :id=>"16b8d68f-b173-42f8-b6c9-4b0b2893dc0d",
+ :code=>"WZX",
+ :contract_id=>"43243432",
+ :account=>"54325432",
+ :name_id=>"7c32404c-0588-417e-9eac-416dce6a095f",
+ :supplier_id=>"31e63dce-0ec7-45d8-9da9-1fd952ca3aa6",
+ :season_id=>"f52235c1-3fdb-46a4-9038-31117db0e56f",
+ :name=>"Name",
+ :supplier=>"NEW",
+ :profile=>nil,
+ :services=>["Weight", "Weight"],
+ :geolocations=>["Germany", "Germany"]
+}
 
 diff = HashDiff.diff(a, b)
-diff.should == [['-', 'a.x', 2], ['-', 'a.z', 4], ['-', 'b.x', 3], ['~', 'b.z', 45, 30], ['+', 'b.y', 3]]
+diff.should == [
+ ["~", "account", "654364536543", "54325432"],
+ ["~", "contract_id", "542354543", "43243432"],
+ ["+", "geolocations[0]", "Germany"],
+ ["+", "geolocations[1]", "Germany"],
+ ["+", "services[0]", "Weight"],
+ ["+", "services[1]", "Weight"]
+]
 ```
 
-Arrays in hashes:
-
-```ruby
-a = {a:[{x:2, y:3, z:4}, {x:11, y:22, z:33}], b:{x:3, z:45}}
-b = {a:[{y:3}, {x:11, z:33}], b:{y:22}}
-
-diff = HashDiff.best_diff(a, b)
-diff.should == [['-', 'a[0].x', 2], ['-', 'a[0].z', 4], ['-', 'a[1].y', 22], ['-', 'b.x', 3], ['-', 'b.z', 45], ['+', 'b.y', 22]]
-```
 
 ### Patch
 
@@ -87,8 +99,7 @@ HashDiff.unpatch!(b, diff).should == a
 
 ### Options
 
-There are six options available: `:delimiter`, `:similarity`,
-`:strict`, `:numeric_tolerance`, `:strip` and `:case_insensitive`.
+There are six options available: `:delimiter`, `:similarity`, `:strict`, `:numeric_tolerance`, `:strip` and `:case_insensitive`.
 
 #### `:delimiter`
 
